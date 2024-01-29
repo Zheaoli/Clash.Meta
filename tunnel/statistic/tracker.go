@@ -11,6 +11,7 @@ import (
 	N "github.com/metacubex/mihomo/common/net"
 	"github.com/metacubex/mihomo/common/utils"
 	C "github.com/metacubex/mihomo/constant"
+	"github.com/metacubex/mihomo/metrics"
 
 	"github.com/gofrs/uuid/v5"
 )
@@ -56,6 +57,7 @@ func (tt *tcpTracker) Read(b []byte) (int, error) {
 		tt.manager.PushDownloaded(download)
 	}
 	tt.DownloadTotal.Add(download)
+	metrics.DefaultMetrics.ClashNetworkTrafficBytesTotal(tt.Metadata.SrcIP.String(), tt.Metadata.DstIP.String(), tt.Chain[0], "download", float64(download))
 	return n, err
 }
 
@@ -66,6 +68,7 @@ func (tt *tcpTracker) ReadBuffer(buffer *buf.Buffer) (err error) {
 		tt.manager.PushDownloaded(download)
 	}
 	tt.DownloadTotal.Add(download)
+	metrics.DefaultMetrics.ClashNetworkTrafficBytesTotal(tt.Metadata.SrcIP.String(), tt.Metadata.DstIP.String(), tt.Chain[0], "download", float64(download))
 	return
 }
 
@@ -75,6 +78,7 @@ func (tt *tcpTracker) UnwrapReader() (io.Reader, []N.CountFunc) {
 			tt.manager.PushDownloaded(download)
 		}
 		tt.DownloadTotal.Add(download)
+		metrics.DefaultMetrics.ClashNetworkTrafficBytesTotal(tt.Metadata.SrcIP.String(), tt.Metadata.DstIP.String(), tt.Chain[0], "download", float64(download))
 	}}
 }
 
@@ -85,6 +89,7 @@ func (tt *tcpTracker) Write(b []byte) (int, error) {
 		tt.manager.PushUploaded(upload)
 	}
 	tt.UploadTotal.Add(upload)
+	metrics.DefaultMetrics.ClashNetworkTrafficBytesTotal(tt.Metadata.SrcIP.String(), tt.Metadata.DstIP.String(), tt.Chain[0], "upload", float64(upload))
 	return n, err
 }
 
@@ -95,6 +100,7 @@ func (tt *tcpTracker) WriteBuffer(buffer *buf.Buffer) (err error) {
 		tt.manager.PushUploaded(upload)
 	}
 	tt.UploadTotal.Add(upload)
+	metrics.DefaultMetrics.ClashNetworkTrafficBytesTotal(tt.Metadata.SrcIP.String(), tt.Metadata.DstIP.String(), tt.Chain[0], "upload", float64(upload))
 	return
 }
 
@@ -104,6 +110,7 @@ func (tt *tcpTracker) UnwrapWriter() (io.Writer, []N.CountFunc) {
 			tt.manager.PushUploaded(upload)
 		}
 		tt.UploadTotal.Add(upload)
+		metrics.DefaultMetrics.ClashNetworkTrafficBytesTotal(tt.Metadata.SrcIP.String(), tt.Metadata.DstIP.String(), tt.Chain[0], "upload", float64(upload))
 	}}
 }
 
@@ -192,6 +199,7 @@ func (ut *udpTracker) ReadFrom(b []byte) (int, net.Addr, error) {
 		ut.manager.PushDownloaded(download)
 	}
 	ut.DownloadTotal.Add(download)
+	metrics.DefaultMetrics.ClashNetworkTrafficBytesTotal(ut.Metadata.SrcIP.String(), ut.Metadata.DstIP.String(), ut.Chain[0], "download", float64(download))
 	return n, addr, err
 }
 
@@ -202,6 +210,7 @@ func (ut *udpTracker) WaitReadFrom() (data []byte, put func(), addr net.Addr, er
 		ut.manager.PushDownloaded(download)
 	}
 	ut.DownloadTotal.Add(download)
+	metrics.DefaultMetrics.ClashNetworkTrafficBytesTotal(ut.Metadata.SrcIP.String(), ut.Metadata.DstIP.String(), ut.Chain[0], "download", float64(download))
 	return
 }
 
@@ -212,6 +221,7 @@ func (ut *udpTracker) WriteTo(b []byte, addr net.Addr) (int, error) {
 		ut.manager.PushUploaded(upload)
 	}
 	ut.UploadTotal.Add(upload)
+	metrics.DefaultMetrics.ClashNetworkTrafficBytesTotal(ut.Metadata.SrcIP.String(), ut.Metadata.DstIP.String(), ut.Chain[0], "upload", float64(upload))
 	return n, err
 }
 
@@ -226,7 +236,7 @@ func (ut *udpTracker) Upstream() any {
 
 func NewUDPTracker(conn C.PacketConn, manager *Manager, metadata *C.Metadata, rule C.Rule, uploadTotal int64, downloadTotal int64, pushToManager bool) *udpTracker {
 	metadata.RemoteDst = parseRemoteDestination(nil, conn)
-
+	metrics.DefaultMetrics.ClashIPAddressAccessTotal(metadata.DstIP.String())
 	ut := &udpTracker{
 		PacketConn: conn,
 		manager:    manager,

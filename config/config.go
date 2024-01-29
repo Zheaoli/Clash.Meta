@@ -169,6 +169,12 @@ type Experimental struct {
 	IP4PEnable       bool     `yaml:"dialer-ip4p-convert"`
 }
 
+type MetricConfig struct {
+	Enable bool   `yaml:"enable"`
+	Port   int    `yaml:"port"`
+	Path   string `yaml:"path"`
+}
+
 // Config is mihomo config manager
 type Config struct {
 	General       *General
@@ -188,6 +194,7 @@ type Config struct {
 	Tunnels       []LC.Tunnel
 	Sniffer       *Sniffer
 	TLS           *TLS
+	Metric        *MetricConfig
 }
 
 type RawNTP struct {
@@ -352,8 +359,15 @@ type RawConfig struct {
 	SubRules      map[string][]string       `yaml:"sub-rules"`
 	RawTLS        TLS                       `yaml:"tls"`
 	Listeners     []map[string]any          `yaml:"listeners"`
+	Metric        MetricConfig              `yaml:"metric"`
 
 	ClashForAndroid RawClashForAndroid `yaml:"clash-for-android" json:"clash-for-android"`
+}
+
+type RawMetricConfig struct {
+	Enable bool   `yaml:"enable"`
+	Port   int    `yaml:"port"`
+	Path   string `yaml:"path"`
 }
 
 type GeoXUrl struct {
@@ -525,6 +539,7 @@ func ParseRawConfig(rawCfg *RawConfig) (*Config, error) {
 	config.Profile = &rawCfg.Profile
 	config.IPTables = &rawCfg.IPTables
 	config.TLS = &rawCfg.RawTLS
+	config.Metric = &rawCfg.Metric
 
 	general, err := parseGeneral(rawCfg)
 	if err != nil {
