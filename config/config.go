@@ -364,12 +364,6 @@ type RawConfig struct {
 	ClashForAndroid RawClashForAndroid `yaml:"clash-for-android" json:"clash-for-android"`
 }
 
-type RawMetricConfig struct {
-	Enable bool   `yaml:"enable"`
-	Port   int    `yaml:"port"`
-	Path   string `yaml:"path"`
-}
-
 type GeoXUrl struct {
 	GeoIp   string `yaml:"geoip" json:"geoip"`
 	Mmdb    string `yaml:"mmdb" json:"mmdb"`

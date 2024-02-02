@@ -22,7 +22,6 @@ type GeoIP struct {
 }
 
 var (
-	address  string
 	err      error
 	geo      GeoIP
 	response *http.Response

@@ -3,6 +3,7 @@ package executor
 import (
 	"fmt"
 	"net"
+	"net/http"
 	"net/netip"
 	"os"
 	"runtime"
@@ -36,6 +37,7 @@ import (
 	"github.com/metacubex/mihomo/log"
 	"github.com/metacubex/mihomo/ntp"
 	"github.com/metacubex/mihomo/tunnel"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 var mux sync.Mutex
@@ -114,6 +116,7 @@ func ApplyConfig(cfg *config.Config, force bool) {
 	tunnel.OnRunning()
 	hcCompatibleProvider(cfg.Providers)
 	initExternalUI()
+	go startMetricServer(cfg.Metric)
 
 	log.SetLevel(cfg.General.LogLevel)
 }
@@ -519,6 +522,25 @@ func updateIPTables(cfg *config.Config) {
 	}
 
 	log.Infoln("[IPTABLES] Setting iptables completed")
+}
+
+func startMetricServer(config *config.MetricConfig) {
+	if config == nil {
+		return
+	}
+	if !config.Enable {
+		return
+	}
+	port := config.Port
+	if port <= 0 {
+		port = 10086
+	}
+	path := config.Path
+	if path == "" {
+		path = "/metrics"
+	}
+	http.Handle(path, promhttp.Handler())
+	http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 }
 
 func Shutdown() {

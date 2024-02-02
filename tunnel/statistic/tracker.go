@@ -142,7 +142,7 @@ func NewTCPTracker(conn C.Conn, manager *Manager, metadata *C.Metadata, rule C.R
 	if conn != nil {
 		metadata.RemoteDst = parseRemoteDestination(conn.RemoteAddr(), conn)
 	}
-
+	metrics.DefaultMetrics.ClashIPAddressAccessTotal(metadata.DstIP.String())
 	t := &tcpTracker{
 		Conn:    conn,
 		manager: manager,
