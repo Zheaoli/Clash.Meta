@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/metacubex/mihomo/common/atomic"
+	"github.com/metacubex/mihomo/metrics"
 
 	"github.com/puzpuzpuz/xsync/v3"
 	"github.com/shirou/gopsutil/v3/process"
@@ -41,10 +42,12 @@ type Manager struct {
 
 func (m *Manager) Join(c Tracker) {
 	m.connections.Store(c.ID(), c)
+	metrics.DefaultMetrics.ClashActiveConnections(float64(m.connections.Size()))
 }
 
 func (m *Manager) Leave(c Tracker) {
 	m.connections.Delete(c.ID())
+	metrics.DefaultMetrics.ClashActiveConnections(float64(m.connections.Size()))
 }
 
 func (m *Manager) Get(id string) (c Tracker) {
@@ -63,11 +66,13 @@ func (m *Manager) Range(f func(c Tracker) bool) {
 func (m *Manager) PushUploaded(size int64) {
 	m.uploadTemp.Add(size)
 	m.uploadTotal.Add(size)
+	metrics.DefaultMetrics.ClashUploadBytesTotal(float64(size))
 }
 
 func (m *Manager) PushDownloaded(size int64) {
 	m.downloadTemp.Add(size)
 	m.downloadTotal.Add(size)
+	metrics.DefaultMetrics.ClashDownloadBytesTotal(float64(size))
 }
 
 func (m *Manager) Now() (up int64, down int64) {
